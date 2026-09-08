@@ -37,7 +37,7 @@ macOS 13 or later, Apple Silicon, and Swift/Xcode Command Line Tools.
 - no subprocess polling
 - approximately two-second refresh interval
 
-The estimate is wired memory plus non-purgeable internal pages plus the compressor's physical footprint. File-backed external pages are treated as reclaimable cache, and compressor pages are counted once.
+RamBar estimates Activity Monitor-style Memory Used using physical RAM minus reclaimable pages: true free memory, file-backed external/cache pages, and purgeable pages. Speculative pages are removed from `free_count` because they are already file-backed; compressor memory is implicit in the physical-minus-reclaimable result and is not added again.
 
 ## Privacy
 

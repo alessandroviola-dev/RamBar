@@ -6,6 +6,15 @@ import os
 struct RamBarApp {
     @MainActor
     static func main() {
+        if CommandLine.arguments.contains("--memory-debug") {
+            guard let snapshot = MemoryReader.debugSnapshot() else {
+                fputs("RamBar: could not read VM statistics\n", stderr)
+                exit(1)
+            }
+            printMemoryDebug(snapshot)
+            return
+        }
+
         // Used only by uninstall.sh from the installed bundle.
         if CommandLine.arguments.contains("--unregister-login") {
             do {
@@ -23,6 +32,24 @@ struct RamBarApp {
         let delegate = AppDelegate()
         app.delegate = delegate
         withExtendedLifetime(delegate) { app.run() }
+    }
+
+    private static func printMemoryDebug(_ snapshot: MemoryDebugSnapshot) {
+        let counters = snapshot.counters
+        print("physicalBytes: \(snapshot.physicalBytes)")
+        print("pageSize: \(snapshot.pageSize)")
+        print("free_count: \(counters.free)")
+        print("speculative_count: \(counters.speculative)")
+        print("external_page_count: \(counters.external)")
+        print("purgeable_count: \(counters.purgeable)")
+        print("internal_page_count: \(counters.internalPages)")
+        print("wire_count: \(counters.wired)")
+        print("compressor_page_count: \(counters.compressor)")
+        print("total_uncompressed_pages_in_compressor: \(counters.uncompressedCompressor)")
+        print("currentFormulaUsedBytes: \(snapshot.oldUsedBytes)")
+        print("candidateFormulaUsedBytes: \(snapshot.usedBytes)")
+        print("currentPercentage: \(snapshot.oldPercentage.map(String.init) ?? "?")")
+        print("candidatePercentage: \(snapshot.percentage.map(String.init) ?? "?")")
     }
 }
 
