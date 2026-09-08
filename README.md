@@ -12,6 +12,8 @@ RamBar keeps one whole-number RAM utilization value visible in the menu bar. Its
 
 macOS uses otherwise idle memory for caches. RamBar estimates meaningful used physical memory rather than using the misleading `physical memory - free memory` shortcut.
 
+The current accounting was manually validated against Activity Monitor on an 8 GB Apple Silicon Mac. Under a many-application workload, Activity Monitor reported 6.13 GB used (76.6%) while RamBar displayed `RAM 76%`.
+
 ## Install
 
 ```bash
@@ -55,6 +57,8 @@ swift build -c release
 swift test
 ```
 
+See `TESTING.md` for automated verification and real Activity Monitor comparisons.
+
 ## Uninstall
 
 ```bash
@@ -63,7 +67,7 @@ swift test
 
 ## Limitations
 
-RamBar shows RAM utilization, not Apple's Memory Pressure indicator. A percentage alone does not diagnose a memory problem, and its documented native estimate can differ modestly from Activity Monitor's presentation.
+RamBar shows RAM utilization, not Apple's Memory Pressure indicator. A percentage alone does not diagnose a memory problem, and independently sampled values can differ slightly from Activity Monitor at any instant.
 
 ## License
 
