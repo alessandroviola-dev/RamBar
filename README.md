@@ -17,7 +17,7 @@ The current accounting was manually validated against Activity Monitor on an 8 G
 ## Install
 
 ```bash
-git clone https://github.com/Ilcoach/RamBar.git
+git clone https://github.com/alessandroviola-dev/RamBar.git
 cd RamBar
 ./install.sh
 ```
