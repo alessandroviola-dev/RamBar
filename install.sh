@@ -29,6 +29,7 @@ mkdir -p "$STAGE/RamBar.app/Contents/MacOS" "$STAGE/RamBar.app/Contents/Resource
 cp "$EXECUTABLE" "$STAGE/RamBar.app/Contents/MacOS/RamBar"
 cp Resources/Info.plist "$STAGE/RamBar.app/Contents/Info.plist"
 cp Resources/PrivacyInfo.xcprivacy "$STAGE/RamBar.app/Contents/Resources/PrivacyInfo.xcprivacy"
+cp Resources/AppIcon.icns "$STAGE/RamBar.app/Contents/Resources/AppIcon.icns"
 /usr/bin/codesign --force --sign - --timestamp=none "$STAGE/RamBar.app"
 /usr/bin/codesign --verify --deep --strict --verbose=2 "$STAGE/RamBar.app" >/dev/null
 
