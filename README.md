@@ -14,7 +14,22 @@ macOS uses otherwise idle memory for caches. RamBar estimates meaningful used ph
 
 The current accounting was manually validated against Activity Monitor on an 8 GB Apple Silicon Mac. Under a many-application workload, Activity Monitor reported 6.13 GB used (76.6%) while RamBar displayed `RAM 76%`.
 
-## Install
+## Download
+
+Normal users should download the latest compiled `RamBar-vX.Y.Z-macOS.zip` from [GitHub Releases](https://github.com/alessandroviola-dev/RamBar/releases). The download is ready to use: Xcode, Swift, Homebrew, and Command Line Tools are **not** required.
+
+## Installation
+
+1. Download `RamBar-vX.Y.Z-macOS.zip` from GitHub Releases.
+2. Extract it to obtain `RamBar.app`.
+3. Drag `RamBar.app` to `/Applications`.
+4. Open RamBar.
+
+The current builds are ad-hoc signed and are not yet Developer ID notarized. If Gatekeeper blocks the first launch, control-click the app, choose **Open**, then confirm **Open**; alternatively approve it in **System Settings → Privacy & Security**. Do not disable Gatekeeper globally.
+
+## Build from source (developers)
+
+macOS 13 or later, Apple Silicon, and Swift/Xcode Command Line Tools are needed only by developers building from source:
 
 ```bash
 git clone https://github.com/alessandroviola-dev/RamBar.git
@@ -22,9 +37,7 @@ cd RamBar
 ./install.sh
 ```
 
-## Requirements
-
-macOS 13 or later, Apple Silicon, and Swift/Xcode Command Line Tools.
+To create the release bundle and ZIP used by CI, run `./scripts/build-release.sh`.
 
 ## How it works
 
