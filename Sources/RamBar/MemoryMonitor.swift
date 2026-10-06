@@ -11,6 +11,8 @@ final class MemoryMonitor {
 
     func start() {
         guard timer == nil else { return }
+        hasRendered = false
+        lastPercentage = nil
         refresh()
         let timer = Timer(timeInterval: 2.0, target: self, selector: #selector(refreshFromTimer), userInfo: nil, repeats: true)
         timer.tolerance = 0.25

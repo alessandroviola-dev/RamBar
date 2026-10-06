@@ -4,6 +4,13 @@
 
 A tiny native macOS menu bar utility that shows current RAM usage.
 
+## Requirements
+
+- macOS 13 Ventura or later
+- Apple Silicon Mac (arm64)
+
+Intel Macs are not currently supported.
+
 ## What it does
 
 RamBar keeps one whole-number RAM utilization value visible in the menu bar. Its menu contains only Refresh, Launch at Login, and Quit.
@@ -13,6 +20,8 @@ RamBar keeps one whole-number RAM utilization value visible in the menu bar. Its
 macOS uses otherwise idle memory for caches. RamBar estimates meaningful used physical memory rather than using the misleading `physical memory - free memory` shortcut.
 
 The current accounting was manually validated against Activity Monitor on an 8 GB Apple Silicon Mac. Under a many-application workload, Activity Monitor reported 6.13 GB used (76.6%) while RamBar displayed `RAM 76%`.
+
+The displayed value is an estimate and may differ slightly from Activity Monitor because Apple does not provide a stable public formula for its memory percentage.
 
 ## Download
 
