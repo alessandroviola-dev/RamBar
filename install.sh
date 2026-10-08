@@ -8,49 +8,75 @@ source "$ROOT/scripts/common.sh"
 command -v swift >/dev/null || fail 'Swift / Xcode Command Line Tools are required.'
 command -v codesign >/dev/null || fail 'codesign is required.'
 check_existing_app
+check_existing_app "$LEGACY_APP"
+[[ -d /Applications && -w /Applications ]] || fail '/Applications must be writable; no per-user fallback is permitted.'
 
 cd "$ROOT"
 swift build -c release --arch arm64 -Xswiftc -warnings-as-errors
-EXECUTABLE=$(swift build -c release --arch arm64 --show-bin-path)/RamBar
-[[ -x "$EXECUTABLE" ]] || fail 'Release executable was not produced.'
-/usr/bin/lipo -archs "$EXECUTABLE" | /usr/bin/grep -qw arm64 || fail 'Release executable is not arm64.'
-/usr/bin/plutil -lint Resources/Info.plist >/dev/null
-/usr/bin/plutil -lint Resources/PrivacyInfo.xcprivacy >/dev/null
+BIN=$(swift build -c release --arch arm64 --show-bin-path)
+[[ -x "$BIN/RamBar" ]] || fail 'Release executable was not produced.'
+/usr/bin/lipo -archs "$BIN/RamBar" | /usr/bin/grep -qw arm64 || fail 'Release executable is not arm64.'
 
-STAGE=$(mktemp -d "${TMPDIR:-/tmp}/RamBar.XXXXXX")
-BACKUP=""
+STAGE=$(mktemp -d "/Applications/.RamBar-install.XXXXXX")
+BACKUP="$STAGE/previous.app"
+LEGACY_BACKUP="$STAGE/legacy.app"
+NEW="$STAGE/RamBar.app"
+LEGACY_MOVED=0
+REPLACED=0
 COMMITTED=0
 cleanup() {
+    local result=$?
+    trap - EXIT INT TERM
+    if [[ $COMMITTED == 0 ]]; then
+        if [[ $REPLACED == 1 ]]; then
+            stop_installed_app
+            rm -rf -- "$APP" || { printf 'Recovery files retained: %s\n' "$STAGE" >&2; exit 1; }
+            if [[ -d "$BACKUP" ]]; then
+                mv -- "$BACKUP" "$APP" || { printf 'Recovery files retained: %s\n' "$STAGE" >&2; exit 1; }
+                /usr/bin/open "$APP" || true
+            fi
+        fi
+        if [[ $LEGACY_MOVED == 1 ]]; then
+            mv -- "$LEGACY_BACKUP" "$LEGACY_APP" || { printf 'Recovery files retained: %s\n' "$STAGE" >&2; exit 1; }
+            /usr/bin/open "$LEGACY_APP" || true
+        fi
+    fi
     rm -rf -- "$STAGE"
-    if [[ $COMMITTED != 1 && -n $BACKUP && -e $BACKUP && ! -e $APP ]]; then mv -- "$BACKUP" "$APP"; fi
+    exit "$result"
 }
 trap cleanup EXIT
-mkdir -p "$STAGE/RamBar.app/Contents/MacOS" "$STAGE/RamBar.app/Contents/Resources"
-cp "$EXECUTABLE" "$STAGE/RamBar.app/Contents/MacOS/RamBar"
-cp Resources/Info.plist "$STAGE/RamBar.app/Contents/Info.plist"
-cp Resources/PrivacyInfo.xcprivacy "$STAGE/RamBar.app/Contents/Resources/PrivacyInfo.xcprivacy"
-cp Resources/AppIcon.icns "$STAGE/RamBar.app/Contents/Resources/AppIcon.icns"
-/usr/bin/codesign --force --sign - --timestamp=none "$STAGE/RamBar.app"
-/usr/bin/codesign --verify --deep --strict --verbose=2 "$STAGE/RamBar.app" >/dev/null
+trap 'exit 130' INT
+trap 'exit 143' TERM
+mkdir -p "$NEW/Contents/MacOS" "$NEW/Contents/Resources"
+cp "$ROOT/Resources/Info.plist" "$NEW/Contents/Info.plist"
+cp "$ROOT/Resources/PrivacyInfo.xcprivacy" "$NEW/Contents/Resources/PrivacyInfo.xcprivacy"
+cp "$ROOT/Resources/AppIcon.icns" "$NEW/Contents/Resources/AppIcon.icns"
+cp "$BIN/RamBar" "$NEW/Contents/MacOS/RamBar"
+chmod 755 "$NEW/Contents/MacOS/RamBar"
+plutil -lint "$NEW/Contents/Info.plist" "$NEW/Contents/Resources/PrivacyInfo.xcprivacy" >/dev/null
+codesign --force --sign - --timestamp=none --identifier "$BUNDLE_ID" \
+    --requirements "=designated => identifier \"$BUNDLE_ID\"" "$NEW"
+codesign --verify --deep --strict "$NEW"
+check_existing_app "$NEW"
 
-mkdir -p "$HOME/Applications"
+# Revalidate immediately before modifying either installation.
+check_existing_app
+check_existing_app "$LEGACY_APP"
 stop_installed_app
-if [[ -e $APP ]]; then
-    BACKUP=$(mktemp -d "${TMPDIR:-/tmp}/RamBar-backup.XXXXXX")/RamBar.app
-    mv -- "$APP" "$BACKUP"
+stop_installed_app "$LEGACY_APP"
+if [[ -e "$LEGACY_APP" ]]; then
+    mv -- "$LEGACY_APP" "$LEGACY_BACKUP"
+    LEGACY_MOVED=1
 fi
-mv "$STAGE/RamBar.app" "$APP"
+# Canonical replacement and backup share the destination filesystem.
+if [[ -e "$APP" ]]; then mv -- "$APP" "$BACKUP"; fi
+REPLACED=1
+mv -- "$NEW" "$APP"
 /usr/bin/open "$APP"
-for _ in {1..30}; do
-    [[ -n $(installed_pids) ]] && break
-    sleep 0.1
-done
-if [[ -z $(installed_pids) ]]; then
-    rm -rf -- "$APP"
-    [[ -n $BACKUP && -e $BACKUP ]] && mv -- "$BACKUP" "$APP"
-    fail 'New app did not remain running; previous installation was restored.'
-fi
-cmp -s Resources/PrivacyInfo.xcprivacy "$APP/Contents/Resources/PrivacyInfo.xcprivacy" || fail 'Installed privacy manifest differs from source.'
+sleep 2
+[[ -n $(installed_pids) ]] || fail 'The installed application did not remain running.'
+plutil -lint "$APP/Contents/Resources/PrivacyInfo.xcprivacy" >/dev/null
+cmp -s "$ROOT/Resources/PrivacyInfo.xcprivacy" "$APP/Contents/Resources/PrivacyInfo.xcprivacy" \
+    || fail 'Installed privacy manifest differs from source.'
 COMMITTED=1
-[[ -z $BACKUP ]] || rm -rf -- "${BACKUP%/RamBar.app}"
 printf 'RamBar installed and running: %s\n' "$APP"

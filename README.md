@@ -46,6 +46,8 @@ cd RamBar
 ./install.sh
 ```
 
+The installer uses only `/Applications/RamBar.app`; `/Applications` must be writable, with no per-user fallback. Verified legacy copies in `~/Applications` are backed up and removed only after successful installation; failures restore both copies. Invalid or symlinked bundles are refused. After migration, check Launch at Login in the canonical app.
+
 To create the release bundle and ZIP used by CI, run `./scripts/build-release.sh`.
 
 ## How it works
@@ -80,6 +82,8 @@ See `TESTING.md` for automated verification and real Activity Monitor comparison
 ```bash
 ./uninstall.sh
 ```
+
+Removes only verified `/Applications/RamBar.app` and any legacy `~/Applications/RamBar.app`, unregistering their login items first. Unrelated apps and user files are left untouched.
 
 ## Limitations
 
