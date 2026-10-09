@@ -24,7 +24,9 @@ jobs:
           shellcheck install.sh uninstall.sh scripts/*.sh
           bash -n install.sh uninstall.sh scripts/*.sh
       - name: Test
-        run: swift test
+        run: |
+          swift test
+          python3 scripts/test-privacy.py
       - name: Build signed app and distributable ZIP
         run: ./scripts/build-release.sh
       - name: Verify release metadata
@@ -32,7 +34,10 @@ jobs:
           plutil -lint dist/RamBar.app/Contents/Info.plist
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' dist/RamBar.app/Contents/Info.plist)" = com.alessandroviola.rambar
           codesign --verify --deep --strict dist/RamBar.app
-          unzip -Z1 dist/RamBar-v*-macOS.zip | grep -q '^RamBar.app/Contents/MacOS/RamBar$'
+          unzip -Z1 dist/RamBar-v*-macOS.zip > "$RUNNER_TEMP/rambar-entries.txt"
+          grep '^RamBar.app/Contents/MacOS/RamBar$' "$RUNNER_TEMP/rambar-entries.txt"
+          python3 scripts/privacy-scan.py bundle dist/RamBar.app
+          python3 scripts/privacy-scan.py zip dist/RamBar-v*-macOS.zip
       - name: Upload distributable artifact
         uses: actions/upload-artifact@v4
         with:

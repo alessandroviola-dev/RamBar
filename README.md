@@ -25,11 +25,13 @@ The displayed value is an estimate and may differ slightly from Activity Monitor
 
 ## Download
 
-Normal users should download the compiled `RamBar-v0.1.0-macOS.zip` from [GitHub Releases](https://github.com/alessandroviola-dev/RamBar/releases). The ZIP contains the ready-to-use macOS application: Xcode, Swift, Homebrew, and Command Line Tools are **not** required.
+Current release: **v0.1.1 (build 2)**.
+
+Normal users should download the compiled `RamBar-v0.1.1-macOS.zip` from [GitHub Releases](https://github.com/alessandroviola-dev/RamBar/releases). The ZIP contains the ready-to-use macOS application: Xcode, Swift, Homebrew, and Command Line Tools are **not** required.
 
 ## Installation
 
-1. Download `RamBar-v0.1.0-macOS.zip` from GitHub Releases.
+1. Download `RamBar-v0.1.1-macOS.zip` from GitHub Releases.
 2. Extract it to obtain `RamBar.app`.
 3. Drag `RamBar.app` to `/Applications`.
 4. Open RamBar.
@@ -48,7 +50,13 @@ cd RamBar
 
 The installer uses only `/Applications/RamBar.app`; `/Applications` must be writable, with no per-user fallback. Verified legacy copies in `~/Applications` are backed up and removed only after successful installation; failures restore both copies. Invalid or symlinked bundles are refused. After migration, check Launch at Login in the canonical app.
 
-To create the release bundle and ZIP used by CI, run `./scripts/build-release.sh`.
+To create the release bundle and ZIP used by CI, run `./scripts/build-release.sh` (Python 3 is required for packaging checks). Existing output is never overwritten; for a local build use a fresh directory:
+
+```bash
+OUTPUT_DIR="$(mktemp -d /tmp/RamBar-package.XXXXXX)" ./scripts/build-release.sh
+```
+
+Packaging uses an isolated arm64 build, remaps compiler paths and omits linker debug-map paths before signing. A fail-closed binary privacy scan checks the bundle, ZIP entries and extracted files. See `RELEASE_PRIVACY.md` for the local v0.1.1 checkpoint.
 
 ## How it works
 
