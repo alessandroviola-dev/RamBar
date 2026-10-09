@@ -25,11 +25,11 @@ The displayed value is an estimate and may differ slightly from Activity Monitor
 
 ## Download
 
-Normal users should download the latest compiled `RamBar-vX.Y.Z-macOS.zip` from [GitHub Releases](https://github.com/alessandroviola-dev/RamBar/releases). The download is ready to use: Xcode, Swift, Homebrew, and Command Line Tools are **not** required.
+Normal users should download the compiled `RamBar-v0.1.0-macOS.zip` from [GitHub Releases](https://github.com/alessandroviola-dev/RamBar/releases). The ZIP contains the ready-to-use macOS application: Xcode, Swift, Homebrew, and Command Line Tools are **not** required.
 
 ## Installation
 
-1. Download `RamBar-vX.Y.Z-macOS.zip` from GitHub Releases.
+1. Download `RamBar-v0.1.0-macOS.zip` from GitHub Releases.
 2. Extract it to obtain `RamBar.app`.
 3. Drag `RamBar.app` to `/Applications`.
 4. Open RamBar.
