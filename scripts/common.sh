@@ -6,6 +6,8 @@ fail() { printf 'RamBar: %s\n' "$*" >&2; exit 1; }
 [[ $(uname -s) == Darwin ]] || fail 'macOS is required.'
 [[ -n ${HOME:-} && $HOME == /* && $HOME != / ]] || fail 'HOME must be an absolute user directory.'
 APP="/Applications/RamBar.app"
+# Used by install.sh and uninstall.sh after sourcing this file.
+# shellcheck disable=SC2034
 LEGACY_APP="$HOME/Applications/RamBar.app"
 BUNDLE_ID=com.alessandroviola.rambar
 
@@ -39,7 +41,7 @@ stop_installed_app() {
     for pid in $pids; do
         # Recheck the exact path before signalling a possibly reused PID.
         if installed_pids "$app" | /usr/bin/grep -qx "$pid"; then kill -TERM "$pid" 2>/dev/null || true; fi
-        for attempt in {1..50}; do
+        for ((attempt = 1; attempt <= 50; attempt++)); do
             kill -0 "$pid" 2>/dev/null || break
             sleep 0.1
         done
